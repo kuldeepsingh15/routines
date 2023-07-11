@@ -15,11 +15,16 @@ setInterval(async () => {
   let data = await redisClient.get(`${minute}`);
   let channels = [];
   if (data) channels = JSON.parse(data).channels;
-  let response = await axios({
+  let response = { data: {} };
+  try {
+    response = await axios({
     method: 'post',
     url: process.env.BOT_URL,
     data: { channels }
   });
+  } catch (err) {
+    console.log(err)
+  }
   console.log("********",minute,channels,response.data);
 }, 60000);
 
