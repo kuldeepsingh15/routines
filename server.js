@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 const { createClient } = require('redis');
 const axios = require('axios');
 dotenv.config();
-const redisConnectionUrl = { url: PROD_REDIS_CONNECTION };
+const redisConnectionUrl = { url: process.env.PROD_REDIS_CONNECTION };
 const redisClient = createClient(redisConnectionUrl);
 redisClient.on('error', err => console.log(`Redis Client Error: ${err.stack ? err.stack : err}`));
 redisClient.connect();
