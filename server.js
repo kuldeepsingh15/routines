@@ -51,7 +51,7 @@ const initializeServer = port => {
         res.status(500).send(err)
       }
     });
-    server.get("/healthCheck", () => {
+    server.get("/healthCheck", (req,res) => {
       console.log("Healthy");
       res.status(200).send("Healthy");
     });
