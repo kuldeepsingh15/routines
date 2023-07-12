@@ -13,19 +13,19 @@ setInterval(async () => {
   const currentTime = new Date();
   const minute = currentTime.getMinutes();
   let data = await redisClient.get(`${minute}`);
-  let channels = [];
-  if (data) channels = JSON.parse(data).channels;
-  let response = { data: {} };
-  try {
-    response = await axios({
-    method: 'post',
-    url: process.env.BOT_URL,
-    data: { channels }
-  });
-  } catch (err) {
-    console.log(err)
+  if (data) {
+    try {
+      let channels = JSON.parse(data).channels;
+      let response = await axios({
+        method: 'post',
+        url: process.env.BOT_URL,
+        data: { channels }
+      });
+      console.log("********", minute, channels, response.data);
+    } catch (err) {
+      console.log("********", minute, channels, err);
+    }
   }
-  console.log("********",minute,channels,response.data);
 }, 60000);
 
 const initializeServer = port => {
@@ -34,23 +34,27 @@ const initializeServer = port => {
     server.use(cors());
     server.use(express.json({ extended: false, limit: '20mb' }));
     server.post("/newChannel", async (req, res) => {
-        try {
-            let response = await redisClient.get(`${req.body.mint}`);
-            let data;
-            if (!response) {
-                data = [req.body.channelId];
-            } else {
-                data = JSON.parse(response).channels;
-                if(!data.includes(req.body.channelId)) data.push(req.body.channelId);
-          }
-          redisClient.set(`${req.body.mint}`, JSON.stringify({ channels: data }));
-          console.log("added ", req.body.channelId, " to ", req.body.mint);
-          res.status(200).send('Success');          
-        } catch (err) {
-            console.log(err)
-            res.status(500).send(err)
+      try {
+        let response = await redisClient.get(`${req.body.mint}`);
+        let data;
+        if (!response) {
+          data = [req.body.channelId];
+        } else {
+          data = JSON.parse(response).channels;
+          if (!data.includes(req.body.channelId)) data.push(req.body.channelId);
         }
-    })
+        redisClient.set(`${req.body.mint}`, JSON.stringify({ channels: data }));
+        console.log("added ", req.body.channelId, " to ", req.body.mint);
+        res.status(200).send('Success');
+      } catch (err) {
+        console.log(err)
+        res.status(500).send(err)
+      }
+    });
+    server.get("/healthCheck", () => {
+      console.log("Healthy");
+      res.status(200).send("Healthy");
+    });
     server.listen(port, () => console.log(`Server instance listening @port: ${port}`));
     return server;
   } catch (err) {
