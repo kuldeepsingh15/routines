@@ -44,7 +44,7 @@ const initializeServer = port => {
                 if(!data.includes(req.body.channelId)) data.push(req.body.channelId);
           }
           redisClient.set(`${req.body.mint}`, JSON.stringify({ channels: data }));
-          console.log("added ", req.body.channelId, " to ", mint);
+          console.log("added ", req.body.channelId, " to ", req.body.mint);
           res.status(200).send('Success');          
         } catch (err) {
             console.log(err)
